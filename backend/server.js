@@ -6,8 +6,9 @@ const { execFile } = require("child_process");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors({ origin: "https://teal-brigadeiros-2bb0ea.netlify.app" }));
+// Allow all origins for testing
+app.use(cors({ origin: true }));
+
 app.use(bodyParser.json());
 
 function isValidUrl(string) {
@@ -29,10 +30,12 @@ app.post("/api/download", (req, res) => {
   const args = [
     "-g", // Get direct URL
     "--no-cookies", // Disable cookie handling
-    "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "--retry-sleep", "5", // Wait 5 seconds between retries
+    "--user-agent",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "--retry-sleep",
+    "5", // Wait 5 seconds between retries
     "--force-ipv4", // Avoid IPv6 issues
-    url
+    url,
   ];
 
   execFile("yt-dlp", args, { timeout: 30000 }, (err, stdout, stderr) => {
