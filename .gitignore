@@ -1,0 +1,11 @@
+# Ignore node_modules everywhere
+**/node_modules
+
+# Ignore logs
+*.log
+
+# Ignore build cache (optional)
+dist/
+build/
+# Editor settings
+.vscode/
