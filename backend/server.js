@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors({ origin: "https://videominiapp.netlify.app" }));
+app.use(cors({ origin: "https://teal-brigadeiros-2bb0ea.netlify.app" }));
 app.use(bodyParser.json());
 
 function isValidUrl(string) {

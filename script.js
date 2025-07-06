@@ -1,6 +1,6 @@
 const urlInput = document.getElementById('videoUrl');
 const downloadButton = document.getElementById('downloadButton');
-// const loadingSpinner = document.getElementById('loadingSpinner');
+const loadingSpinner = document.getElementById('loadingSpinner');
 const resultSection = document.getElementById('resultSection');
 const downloadLink = document.getElementById('result');
 const copyButton = document.getElementById('copyButton');
@@ -37,44 +37,55 @@ const showToast = (title, description, variant = 'default') => {
 
 const handleDownload = () => {
   const url = urlInput.value.trim();
-  
   if (!url) {
     showToast('Please enter a URL', 'Paste a video URL to get started', 'destructive');
     return;
   }
 
   downloadButton.disabled = true;
+  loadingSpinner.classList.remove('hidden');
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-  fetch(`https://videominiapp.onrender.com/api/download`, {  // Update if needed
+  fetch(`https://videominiapp.onrender.com/api/download`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url }),
     signal: controller.signal
   })
-    .then(res => res.json())
+    .then(res => {
+      if (res.status === 429) {
+        throw new Error('Rate limit reached, please try again later');
+      }
+      if (res.status === 403) {
+        throw new Error('Authentication required for this video, try a different URL');
+      }
+      if (!res.ok) {
+        throw new Error('Failed to fetch download link');
+      }
+      return res.json();
+    })
     .then(data => {
       if (data.downloadUrl) {
         downloadLink.innerHTML = `<a href="${data.downloadUrl}" target="_blank" rel="noopener noreferrer">Download Link</a>`;
         resultSection.classList.remove('hidden');
         showToast('Success!', 'Your download link is ready');
       } else {
-        showToast('Error', 'No download URL returned', 'destructive');
+        showToast('Error', data.details || 'No download URL returned', 'destructive');
       }
     })
     .catch(err => {
       if (err.name === 'AbortError') {
         showToast('Timeout', 'Server took too long to respond', 'destructive');
       } else {
-        showToast('Server Error', 'Could not fetch download link', 'destructive');
+        showToast('Error', err.message || 'Could not fetch download link', 'destructive');
       }
     })
     .finally(() => {
       clearTimeout(timeoutId);
       downloadButton.disabled = false;
-      // loadingSpinner.classList.add('hidden');
+      loadingSpinner.classList.add('hidden');
     });
 };
 
